@@ -10,55 +10,88 @@ export async function POST(req: NextRequest) {
   if (!(await authed())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const GROQ_KEY = process.env.GROQ_API_KEY;
-  if (!GROQ_KEY) return NextResponse.json({ error: "GROQ_API_KEY not configured" }, { status: 500 });
+  if (!GROQ_KEY) return NextResponse.json({ error: "GROQ_API_KEY not configured in Vercel environment variables." }, { status: 500 });
 
-  const { items, mode } = await req.json();
+  const { items, mode, dept } = await req.json();
 
-  const systemPrompt = `You are a procurement expert for a non-profit NGO event called Ashara Sugarland. 
-Your job is to analyze procurement items and suggest the CHEAPEST and most practical vendor for each item from this list: Amazon, Costco, Sam's Club, Walmart Business, Restaurant Depot, Home Depot, Best Buy, Target, Uline.
+  const systemPrompt = `You are a procurement expert for Ashara Sugarland, a non-profit NGO event in Houston, Texas.
+You analyze procurement items and recommend the CHEAPEST, most practical vendor from this approved list:
+- Amazon (best for: electronics, cables, misc supplies, anything under $50)
+- Costco (best for: bulk food, paper goods, cleaning, medical, large quantities)
+- Sam's Club (best for: bulk food, beverages, snacks, similar to Costco)
+- Walmart Business (best for: general supplies, volume orders, everyday items)
+- Restaurant Depot (best for: commercial food, disposables, serving supplies, beverages)
+- Home Depot (best for: hardware, tools, extension cords, barriers, construction)
+- Best Buy (best for: premium electronics, cameras, AV equipment, warranties)
+- Target (best for: décor, children's items, basic electronics)
+- Uline (best for: industrial packaging, trash bags, janitorial, safety equipment)
 
-Rules:
-- For bulk food/disposables → Restaurant Depot or Costco/Sam's Club
-- For electronics/AV → Amazon usually beats Best Buy on price
-- For cleaning/janitorial → Costco bulk or Uline for industrial
-- For general supplies → Amazon or Walmart Business
-- For construction/hardware → Home Depot
-- Always consider that NGOs benefit from bulk pricing
-- Give realistic estimated unit prices in USD based on current market rates
-- Be concise and practical`;
+Key rules:
+- NGOs get Costco Business membership pricing — factor that in
+- For food/beverage in bulk: Restaurant Depot > Sam's Club > Costco
+- For electronics: Amazon usually 15-30% cheaper than Best Buy
+- For cables/AV accessories: Amazon almost always cheapest
+- For janitorial/cleaning in bulk: Uline or Costco
+- For children's activities: Target or Amazon
+- Always provide realistic 2026 US market price estimates
+- Respond ONLY with valid JSON, no markdown, no extra text`;
 
   let userPrompt = "";
 
-  if (mode === "single" && items.length === 1) {
+  if (mode === "single") {
     const item = items[0];
-    userPrompt = `For this procurement item, suggest the cheapest vendor and estimate the unit price:
+    userPrompt = `Analyze this single procurement item for the cheapest vendor:
 Item: "${item.name}"
 Department: ${item.dept}
+Quantity needed: ${item.qty} ${item.unit || "units"}
 Current vendor: ${item.vendor}
-Current price: ${item.price ? "$" + item.price : "unknown"}
+Current price: ${item.price ? "$" + item.price + " per unit" : "not set"}
 
-Respond in this exact JSON format:
+Return ONLY this JSON:
 {
-  "vendor": "vendor name",
+  "vendor": "cheapest vendor name",
   "estimatedPrice": 12.99,
-  "savings": "saves ~$X vs current" or "best price available",
-  "reasoning": "one sentence why",
+  "savings": "saves ~$X vs [current vendor]" or "best price available",
+  "reasoning": "one clear sentence explaining why this vendor is cheapest",
   "alternativeVendor": "second best option",
   "alternativePrice": 14.99,
-  "tip": "practical buying tip"
+  "tip": "one practical buying tip for an NGO (bulk deals, membership, etc)"
 }`;
+
+  } else if (mode === "dept") {
+    userPrompt = `Analyze ALL procurement items for the "${dept}" department of an NGO event.
+For each item, find the single cheapest vendor and estimate the unit price.
+
+Items to analyze:
+${items.map((i: any, idx: number) => `${idx + 1}. "${i.name}" | qty: ${i.qty} ${i.unit || ""} | current vendor: ${i.vendor} | current price: ${i.price ? "$" + i.price : "unknown"}`).join("\n")}
+
+Return ONLY a JSON array (no markdown):
+[
+  {
+    "itemName": "exact item name from above",
+    "recommendedVendor": "vendor name",
+    "estimatedPrice": 12.99,
+    "currentPrice": null,
+    "savingsNote": "saves ~$X" or "already optimal" or "no current price set",
+    "reasoning": "brief reason (max 8 words)",
+    "alternativeVendor": "second option",
+    "alternativePrice": 14.99
+  }
+]`;
+
   } else {
-    userPrompt = `Analyze these ${items.length} procurement items for an NGO event and suggest the cheapest vendor for each:
+    // bulk - all items
+    userPrompt = `Analyze these ${items.length} procurement items across all departments for an NGO event. Find cheapest vendor for each.
 
-${items.map((i: any, idx: number) => `${idx + 1}. "${i.name}" (${i.dept}) - current: ${i.vendor}, price: ${i.price ? "$" + i.price : "unknown"}`).join("\n")}
+${items.map((i: any, idx: number) => `${idx + 1}. "${i.name}" (${i.dept}) | qty: ${i.qty} ${i.unit || ""} | current: ${i.vendor} @ ${i.price ? "$" + i.price : "unknown"}`).join("\n")}
 
-Respond ONLY with a valid JSON array (no markdown, no extra text):
+Return ONLY a JSON array:
 [
   {
     "itemName": "exact item name",
     "recommendedVendor": "vendor name",
     "estimatedPrice": 12.99,
-    "currentPrice": null or number,
+    "currentPrice": null,
     "savingsNote": "saves ~$X" or "already optimal",
     "reasoning": "brief reason"
   }
@@ -78,8 +111,8 @@ Respond ONLY with a valid JSON array (no markdown, no extra text):
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        temperature: 0.3,
-        max_tokens: 2000,
+        temperature: 0.2,
+        max_tokens: 3000,
       }),
     });
 
@@ -90,11 +123,8 @@ Respond ONLY with a valid JSON array (no markdown, no extra text):
 
     const data = await response.json();
     const text = data.choices[0]?.message?.content || "";
-
-    // Parse JSON from response
     const jsonMatch = text.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
     if (!jsonMatch) return NextResponse.json({ error: "Could not parse AI response", raw: text }, { status: 500 });
-
     const parsed = JSON.parse(jsonMatch[0]);
     return NextResponse.json({ result: parsed, mode });
   } catch (e: any) {
