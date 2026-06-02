@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { kv } from "@vercel/kv";
+import { redis } from "@/lib/redis";
 import { cookies } from "next/headers";
 
 async function authed() {
@@ -14,19 +14,19 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!(await authed())) return unauthorized();
   const { id } = await params;
   const update = await req.json();
-  const items = await kv.get<any[]>("items") ?? [];
+  const items = await redis.get<any[]>("items") ?? [];
   const idx = items.findIndex((i) => i.id === id);
   if (idx === -1) return NextResponse.json({ error: "Not found" }, { status: 404 });
   items[idx] = { ...items[idx], ...update, id };
-  await kv.set("items", items);
+  await redis.set("items", items);
   return NextResponse.json(items[idx]);
 }
 
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   if (!(await authed())) return unauthorized();
   const { id } = await params;
-  const items = await kv.get<any[]>("items") ?? [];
+  const items = await redis.get<any[]>("items") ?? [];
   const filtered = items.filter((i) => i.id !== id);
-  await kv.set("items", filtered);
+  await redis.set("items", filtered);
   return NextResponse.json({ ok: true });
 }

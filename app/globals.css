@@ -1,6 +1,5 @@
-@import "tailwindcss";
-
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
 
 :root {
   --font-playfair: 'Playfair Display', Georgia, serif;
@@ -15,7 +14,6 @@ body {
   font-family: var(--font-dm-sans);
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #fef3c7; }
 ::-webkit-scrollbar-thumb { background: #d97706; border-radius: 3px; }
