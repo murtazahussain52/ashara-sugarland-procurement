@@ -239,11 +239,10 @@ function LoginScreen({onLogin}:{onLogin:()=>void}){
       <div className="absolute inset-0 opacity-5" style={{backgroundImage:"repeating-linear-gradient(45deg,#c9a84c 0,#c9a84c 1px,transparent 0,transparent 50%)",backgroundSize:"20px 20px"}}/>
       <div className="relative flex flex-col items-center w-full px-4">
         <div className="mb-8 text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 border-4" style={{background:`linear-gradient(135deg,${C.teal},${C.navy})`,borderColor:C.gold}}>
-            <span className="text-4xl">🌿</span>
-          </div>
-          <h1 className="text-4xl font-bold" style={{fontFamily:"'Playfair Display',serif",color:C.goldLight}}>Ashara Sugarland</h1>
-          <p className="mt-1 tracking-widest text-xs uppercase" style={{color:C.goldPale,opacity:0.7}}>Procurement Management · NGO</p>
+          <img src="/its_logo.png" alt="Anjuman e Imadi" className="w-24 h-24 object-cover rounded-full border-4 mb-4" style={{borderColor:C.gold,background:"#000"}}/>
+          <h1 className="text-4xl font-bold" style={{fontFamily:"'Playfair Display',serif",color:C.goldLight}}>Anjuman e Imadi</h1>
+          <h2 className="text-2xl font-bold" style={{fontFamily:"'Playfair Display',serif",color:C.gold}}>Sugarland TX</h2>
+          <p className="mt-1 tracking-widest text-xs uppercase" style={{color:C.goldPale,opacity:0.7}}>Procurement Portal · NGO</p>
         </div>
         <div className="w-full max-w-md rounded-2xl shadow-2xl border p-8" style={{background:C.teal,borderColor:C.borderGold}}>
           <div className="rounded-lg px-4 py-2 mb-6" style={{background:C.navy,borderLeft:`4px solid ${C.gold}`}}>
@@ -267,7 +266,7 @@ function LoginScreen({onLogin}:{onLogin:()=>void}){
             </button>
           </form>
         </div>
-        <p className="mt-6 text-xs" style={{color:C.gold,opacity:0.5}}>Ashara Sugarland NGO · Confidential · its52.com</p>
+        <p className="mt-6 text-xs" style={{color:C.gold,opacity:0.5}}>Anjuman e Imadi Sugarland TX · Confidential · its52.com</p>
       </div>
     </div>
   );
@@ -392,10 +391,10 @@ function ProcurementApp({onLogout}:{onLogout:()=>void}){
       <header className="sticky top-0 z-40 shadow-lg" style={{background:`linear-gradient(135deg,${C.navy} 0%,${C.teal} 100%)`,borderBottom:`2px solid ${C.gold}`}}>
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center border-2 text-xl" style={{background:C.tealMid,borderColor:C.gold}}>🌿</div>
+            <img src="/its_logo.png" alt="ITS Logo" className="w-10 h-10 rounded-full object-cover border-2" style={{borderColor:C.gold,background:"#000"}}/>
             <div>
-              <h1 className="font-bold leading-tight" style={{fontFamily:"'Playfair Display',serif",color:C.goldLight,fontSize:"1.1rem"}}>Ashara Sugarland</h1>
-              <p className="text-xs tracking-widest uppercase" style={{color:C.gold,opacity:0.7}}>Procurement Management</p>
+              <h1 className="font-bold leading-tight" style={{fontFamily:"'Playfair Display',serif",color:C.goldLight,fontSize:"1.05rem",lineHeight:"1.1"}}>Anjuman e Imadi<br/>Sugarland TX</h1>
+              <p className="text-xs tracking-widest uppercase" style={{color:C.gold,opacity:0.7}}>Procurement Portal</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
@@ -717,7 +716,7 @@ export default function Home(){
   const [authed,setAuthed]=useState<boolean|null>(null);
   useEffect(()=>{fetch("/api/items").then(r=>setAuthed(r.ok)).catch(()=>setAuthed(false));},[]);
   async function logout(){await fetch("/api/auth/logout",{method:"POST"});setAuthed(false);}
-  if(authed===null)return(<div className="min-h-screen flex items-center justify-center" style={{background:`linear-gradient(135deg,${C.navy},${C.teal})`}}><div className="text-4xl" style={{animation:"spin 2s linear infinite"}}>🌿</div><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
+  if(authed===null)return(<div className="min-h-screen flex items-center justify-center" style={{background:`linear-gradient(135deg,${C.navy},${C.teal})`}}><img src="/its_logo.png" alt="Loading" style={{width:"64px",height:"64px",borderRadius:"50%",objectFit:"cover",background:"#000",animation:"spin 2s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>);
   if(!authed)return<LoginScreen onLogin={()=>setAuthed(true)}/>;
   return<ProcurementApp onLogout={logout}/>;
 }
