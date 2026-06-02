@@ -5,22 +5,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        gold: {
-          50:  "#fffbeb",
-          100: "#fef3c7",
-          200: "#fde68a",
-          300: "#fcd34d",
-          400: "#fbbf24",
-          500: "#f59e0b",
-          600: "#d97706",
-          700: "#b45309",
-          800: "#92400e",
-          900: "#78350f",
+        its: {
+          navy:       "#0f2d3d",
+          teal:       "#1a3d4f",
+          "teal-mid": "#1e4d63",
+          "teal-light":"#235a72",
+          gold:       "#c9a84c",
+          "gold-light":"#e2c97e",
+          "gold-pale": "#f5ecd0",
+          cream:      "#f7f5f0",
+          "cream2":   "#eef0eb",
+          red:        "#b03030",
+          border:     "#2a5068",
         },
       },
       fontFamily: {
         display: ["var(--font-playfair)", "Georgia", "serif"],
-        sans: ["var(--font-dm-sans)", "system-ui", "sans-serif"],
+        sans:    ["var(--font-dm-sans)", "system-ui", "sans-serif"],
       },
     },
   },

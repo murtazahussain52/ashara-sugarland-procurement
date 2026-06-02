@@ -4,16 +4,33 @@
 :root {
   --font-playfair: 'Playfair Display', Georgia, serif;
   --font-dm-sans: 'DM Sans', system-ui, sans-serif;
+
+  /* ITS52 Colors */
+  --its-navy:       #0f2d3d;
+  --its-teal:       #1a3d4f;
+  --its-teal-mid:   #1e4d63;
+  --its-teal-light: #235a72;
+  --its-gold:       #c9a84c;
+  --its-gold-light: #e2c97e;
+  --its-gold-pale:  #f5ecd0;
+  --its-white:      #ffffff;
+  --its-cream:      #f7f5f0;
+  --its-cream2:     #eef0eb;
+  --its-red:        #b03030;
+  --its-text-dark:  #0f2030;
+  --its-text-mid:   #2c4a5a;
+  --its-border:     #2a5068;
+  --its-border-light: #c9a84c44;
 }
 
 * { box-sizing: border-box; }
 
 body {
-  background: #fffdf5;
-  color: #1a1200;
+  background: var(--its-cream);
+  color: var(--its-text-dark);
   font-family: var(--font-dm-sans);
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #fef3c7; }
-::-webkit-scrollbar-thumb { background: #d97706; border-radius: 3px; }
+::-webkit-scrollbar-track { background: var(--its-cream2); }
+::-webkit-scrollbar-thumb { background: var(--its-gold); border-radius: 3px; }
